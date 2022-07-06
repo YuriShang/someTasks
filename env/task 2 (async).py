@@ -19,33 +19,32 @@ from datetime import datetime
 
 
 result = {} # словарь с буквами и количеством живности
-pages = [] # скачанные страницы, в списке храним не более 50
+pages = [] # скачанные страницы, в списке храним не более 20
 link = 'https://inlnk.ru/jElywR'
 
 
 async def main(url):
     async with aiohttp.ClientSession() as session:
-        print('Proccessing...')
-        while True:
+        print('Proccessing...\n')
+
+        # цикл будет длиться до того пока не достигнем буквы "Я"
+        while not result.get('Я'): 
             async with session.get(url) as page:
                 html = await page.text()
                 pages.append(html)
                 soup = Soup(html, "lxml")
                 links = soup.find('div', id='mw-pages').find_all('a')
-                for a in links:
-                    if a.text == 'Следующая страница' and a.get('href'):
+
+                # сслыку на след. страницу пришлось парсить синхронно
+                for a in links:  
+                    if a.text == 'Следующая страница' and a.get('href'):  
                         url = 'https://ru.wikipedia.org/' + a.get('href')
 
-                # в списке храним не более 50 страниц, дабы не засорять ОЗУ
-                if len(pages) >= 50:
+                # в списке храним не более 20 страниц, дабы не засорять ОЗУ
+                if len(pages) == 20:  
                     await dict_builder()
 
-            # если дошли да английской "A" (идет после "Я"), останавливаем процесс
-            if result.get('A'):
-                del result['A']
-                break
-
-
+            
 async def dict_builder():
     for page in pages:
         soup = Soup(page, "lxml")
@@ -58,17 +57,17 @@ async def dict_builder():
             animals_group.append(data.text.split('\n'))
 
         for animals in animals_group:
+            # если дошли да английской "A" (идет после "Я"), останавливаем процесс, удаляем значения по ключу "A"
+            if result.get('A'):
+                del result['A']
+                break
             for animal in animals:
                 if len(animal) == 1:
                     let = animal
-
-                    # если буквы нет в словаре, добавляем
                     if not result.get(let):
                         result.setdefault(let, 0)
                     continue
                 result[let] += 1
-
-    # после обработки всех страниц, очищаем список
     pages.clear()
 
 
