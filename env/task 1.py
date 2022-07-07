@@ -32,7 +32,7 @@ print(task(1,1,2,2,3,3,4,4))
 
 def task_1_2(x1, y1, x2, y2, x3, y3, x4, y4):
     """
-    Находим пересечения прямоугольников с помощью intersection(set_1, set_2)
+    Находим пересечения прямоугольников с помощью set_1.intersection(set_2)
     """
     dx = set(range(x1, x2)) & set(range(x3, x4))
     dy = set(range(y2, y1)) & set(range(y3, y4))  # range(y2, y1) а не range(y1, y2) из-за условий задачи
